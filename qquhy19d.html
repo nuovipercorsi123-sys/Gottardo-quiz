@@ -1,0 +1,225 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Quiz Gottardo</title>
+<style>
+:root{
+  --bg:#f6f3ee; --card:#ffffff; --ink:#1d1b18; --muted:#6a645b; --line:#d9d2c6;
+  --accent:#4a6b2a; --accent-ink:#ffffff; --sel:#fff4e0;
+}
+@media (prefers-color-scheme: dark){
+  :root{ --bg:#17150f; --card:#221f18; --ink:#f1ece2; --muted:#a8a193; --line:#3a352a; --sel:#3a3020; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:18px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;min-height:100vh}
+main{max-width:600px;margin:0 auto;padding:16px 16px 40px}
+.kicker{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);font-weight:700;margin:6px 0 4px}
+h1{font-size:1.6rem;line-height:1.2;margin:0 0 10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin:12px 0}
+.lead{font-size:1.05rem}
+.steps{margin:8px 0 0;padding-left:1.2em}
+.steps li{margin:6px 0}
+button{font:inherit;cursor:pointer}
+.btn{display:block;width:100%;padding:14px 16px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1.05rem;margin-top:14px}
+.btn[disabled]{opacity:.35;cursor:not-allowed}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--line)}
+.progress{height:8px;background:var(--line);border-radius:6px;overflow:hidden;margin:8px 0 4px}
+.progress>i{display:block;height:100%;background:var(--accent);width:0}
+.count{color:var(--muted);font-size:.9rem}
+.q{font-size:1.2rem;font-weight:650;margin:14px 0 12px}
+.opt{display:flex;gap:12px;align-items:flex-start;width:100%;text-align:left;background:var(--card);color:var(--ink);border:2px solid var(--line);border-radius:12px;padding:12px 14px;margin:9px 0}
+.opt .l{flex:none;width:1.7em;height:1.7em;border-radius:50%;border:2px solid var(--line);display:grid;place-items:center;font-weight:700;font-size:.9rem}
+.opt[aria-checked="true"]{border-color:var(--accent);background:var(--sel)}
+.opt[aria-checked="true"] .l{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.hint{background:var(--sel);border-left:5px solid var(--accent);padding:8px 12px;border-radius:8px;font-size:.95rem;margin-top:10px}
+.row{display:flex;gap:10px}
+.row .btn{margin-top:14px}
+.word{text-align:center;border:3px solid var(--accent);border-radius:16px;padding:18px 10px;margin:14px 0;background:var(--card)}
+.word small{display:block;color:var(--muted);font-size:.9rem;letter-spacing:.04em;text-transform:uppercase}
+.word strong{display:block;font-size:2.2rem;line-height:1.2;color:var(--accent);margin-top:6px;overflow-wrap:anywhere}
+.points{padding-left:1.1em;margin:6px 0 0}
+.points li{margin:7px 0}
+.pg{color:var(--muted);white-space:nowrap}
+.fail h1{color:#b3261e}
+.note{color:var(--muted);font-size:.95rem}
+</style>
+</head>
+<body>
+<main id="app" aria-live="polite"></main>
+<noscript><main><p>Per usare il quiz serve JavaScript.</p></main></noscript>
+<script>
+(function(){
+"use strict";
+var KEY = "qquhy19d";
+var DATA = "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";
+
+function decode(b64, key){
+  var bin = atob(b64), n = bin.length, out = new Uint8Array(n);
+  for (var i = 0; i < n; i++) out[i] = bin.charCodeAt(i) ^ key.charCodeAt(i % key.length);
+  return JSON.parse(new TextDecoder("utf-8").decode(out));
+}
+var P = decode(DATA, KEY);
+document.title = "Quiz " + P.group + " · domanda " + P.letter;
+
+var app = document.getElementById("app");
+var store = {
+  get: function(k){ try { return sessionStorage.getItem(k); } catch(e){ return this.mem[k] || null; } },
+  set: function(k,v){ try { sessionStorage.setItem(k, v); } catch(e){ this.mem[k] = v; } },
+  mem: {}
+};
+var FKEY = "gq_fails_" + KEY;
+function fails(){ return parseInt(store.get(FKEY) || "0", 10) || 0; }
+
+function shuffle(a){
+  a = a.slice();
+  for (var i = a.length - 1; i > 0; i--){
+    var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t;
+  }
+  return a;
+}
+function el(tag, cls, text){
+  var e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+function clear(){ app.textContent = ""; window.scrollTo(0, 0); }
+
+var run = null; // stato del tentativo corrente
+
+function intro(){
+  clear();
+  app.appendChild(el("div", "kicker", "Gruppo " + P.group + " · " + P.pages));
+  app.appendChild(el("h1", null, "Domanda " + P.letter + ") " + P.short));
+  var c = el("div", "card");
+  c.appendChild(el("p", "lead", P.sheet));
+  app.appendChild(c);
+  var how = el("div", "card");
+  how.appendChild(el("strong", null, "Come si fa"));
+  var ol = el("ol", "steps");
+  ["Leggi ad alta voce domanda e risposte.",
+   "I compagni cercano nel libro e ti dicono dove si trova la risposta.",
+   "Scegli: non vedrai subito se è giusta. Alla fine il quiz ti dice se sono tutte corrette."
+  ].forEach(function(t){ ol.appendChild(el("li", null, t)); });
+  how.appendChild(ol);
+  app.appendChild(how);
+  var b = el("button", "btn", "Inizia");
+  b.onclick = start;
+  app.appendChild(b);
+}
+
+function start(){
+  var qs = shuffle(P.qs).map(function(q){
+    return { q: q.q, p: q.p, k: q.k,
+             opts: shuffle(q.o.map(function(t, i){ return { t: t, ok: i === 0 }; })),
+             sel: -1 };
+  });
+  run = { qs: qs, i: 0, help: fails() >= 2 };
+  question();
+}
+
+function question(){
+  clear();
+  var q = run.qs[run.i], n = run.qs.length;
+  app.appendChild(el("div", "kicker", "Gruppo " + P.group + " · domanda " + P.letter + ")"));
+  var pr = el("div", "progress"), bar = el("i");
+  bar.style.width = ((run.i) / n * 100) + "%";
+  pr.appendChild(bar); app.appendChild(pr);
+  app.appendChild(el("div", "count", "Quesito " + (run.i + 1) + " di " + n));
+  app.appendChild(el("div", "q", q.q));
+  if (run.help) app.appendChild(el("div", "hint", "Aiuto: guardate a pagina " + q.p + "."));
+  var box = el("div"); box.setAttribute("role", "radiogroup");
+  var letters = ["A", "B", "C", "D", "E"];
+  var next = el("button", "btn", run.i === n - 1 ? "Consegna le risposte" : "Avanti");
+  next.disabled = q.sel < 0;
+  q.opts.forEach(function(o, idx){
+    var b = el("button", "opt");
+    b.setAttribute("role", "radio");
+    b.setAttribute("aria-checked", q.sel === idx ? "true" : "false");
+    b.appendChild(el("span", "l", letters[idx]));
+    b.appendChild(el("span", null, o.t));
+    b.onclick = function(){
+      q.sel = idx;
+      Array.prototype.forEach.call(box.children, function(c, j){ c.setAttribute("aria-checked", j === idx ? "true" : "false"); });
+      next.disabled = false;
+    };
+    box.appendChild(b);
+  });
+  app.appendChild(box);
+  var row = el("div", "row");
+  if (run.i > 0){
+    var back = el("button", "btn ghost", "Indietro");
+    back.onclick = function(){ run.i--; question(); };
+    row.appendChild(back);
+  }
+  next.onclick = function(){
+    if (q.sel < 0) return;
+    if (run.i < n - 1){ run.i++; question(); } else { finish(); }
+  };
+  row.appendChild(next);
+  app.appendChild(row);
+}
+
+function finish(){
+  var ok = run.qs.every(function(q){ return q.opts[q.sel] && q.opts[q.sel].ok; });
+  if (ok) success(); else failScreen();
+}
+
+function failScreen(){
+  store.set(FKEY, String(fails() + 1));
+  clear();
+  var wrap = el("div", "fail");
+  wrap.appendChild(el("div", "kicker", "Gruppo " + P.group + " · domanda " + P.letter + ")"));
+  wrap.appendChild(el("h1", null, "Non ancora"));
+  var c = el("div", "card");
+  c.appendChild(el("p", "lead", "Non tutte le risposte sono corrette. Rileggete le pagine, discutete insieme e riprovate."));
+  c.appendChild(el("p", "note", "Quando ricominciate, domande e risposte cambiano di ordine."));
+  if (fails() === 2){
+    c.appendChild(el("p", "hint", "Al prossimo tentativo troverete un aiuto: la pagina da guardare per ogni quesito."));
+  }
+  wrap.appendChild(c);
+  var b = el("button", "btn", "Ricomincia");
+  b.onclick = start;
+  wrap.appendChild(b);
+  app.appendChild(wrap);
+}
+
+function success(){
+  clear();
+  app.appendChild(el("div", "kicker", "Gruppo " + P.group + " · domanda " + P.letter + ")"));
+  app.appendChild(el("h1", null, "Giusto! Tutte le risposte sono corrette"));
+  var w = el("div", "word");
+  w.appendChild(el("small", null, "Parola n. " + P.pos + " della frase del gruppo"));
+  w.appendChild(el("strong", null, P.word));
+  app.appendChild(w);
+  var c = el("div", "card");
+  c.appendChild(el("strong", null, "Che cosa avete trovato"));
+  var ul = el("ul", "points");
+  P.qs.forEach(function(q){
+    var li = el("li");
+    li.appendChild(document.createTextNode(q.k + " "));
+    li.appendChild(el("span", "pg", "(p. " + q.p + ")"));
+    ul.appendChild(li);
+  });
+  c.appendChild(ul);
+  app.appendChild(c);
+  var t = el("div", "card");
+  t.appendChild(el("strong", null, "Ora tocca al gruppo"));
+  var ol = el("ol", "steps");
+  ["Scrivete insieme la risposta alla domanda " + P.letter + ") con parole vostre, indicando le pagine.",
+   "Ognuno la copia sul proprio foglio.",
+   "Scrivete la parola nella casella n. " + P.pos + " della frase."
+  ].forEach(function(s){ ol.appendChild(el("li", null, s)); });
+  t.appendChild(ol);
+  app.appendChild(t);
+}
+
+intro();
+})();
+</script>
+</body>
+</html>
