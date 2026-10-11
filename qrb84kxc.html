@@ -93,6 +93,10 @@ var run = null; // stato del tentativo corrente
 
 function intro(){
   clear();
+  var im = document.createElement("img");
+  im.src = "locandina.jpg"; im.alt = "Locandina del film Gotthard";
+  im.style.cssText = "width:100%;height:auto;border-radius:12px;display:block;margin:0 0 12px";
+  app.appendChild(im);
   app.appendChild(el("div", "kicker", "Gruppo " + P.group + " · " + P.pages));
   app.appendChild(el("h1", null, "Domanda " + P.letter + ") " + P.short));
   var c = el("div", "card");
